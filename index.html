@@ -1,1 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Task Manager — ONE SW TEAM</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bd:#1F4E79;--bm:#2E75B6;--bl:#BDD7EE;--bp:#E6F1FB;
+  --gn:#375623;--gb:#E2EFDA;--or:#833C00;--ob:#FCE4D6;
+  --rd:#C00000;--rb:#FFE7E7;--gy:#5F5E5A;--gb2:#F1EFE8;
+  --wh:#fff;--sf:#F5F7FA;--br:#D1D5DB;--tx:#1a1a1a;--mu:#6B7280
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--sf);color:var(--tx);min-height:100vh}
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+.lcard{background:#fff;border-radius:16px;padding:48px 40px;text-align:center;border:1px solid var(--br);width:380px}
+.licon{width:60px;height:60px;background:var(--bd);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.lcard h1{font-size:22px;font-weight:600;color:var(--bd);margin-bottom:8px}
+.lcard p{font-size:14px;color:var(--mu);margin-bottom:28px;line-height:1.6}
+.lcard .note{font-size:12px;color:var(--mu);margin-top:14px}
+.btn-ms{width:100%;padding:13px;background:var(--bd);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer}
+.btn-ms:hover{background:var(--bm)}
+.btn-ms:disabled{opacity:0.6;cursor:not-allowed}
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bd);color:#fff;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.uinfo{font-size:13px;opacity:.85}
+.btn-so{padding:5px 14px;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:8px;font-size:12px;cursor:pointer}
+.btn-so:hover{background:rgba(255,255,255,.15)}
+.fbar{background:var(--bd);padding:0 24px 12px;display:flex;gap:6px;flex-wrap:wrap}
+.ftab{padding:5px 16px;border-radius:20px;font-size:12px;cursor:pointer;border:1.5px solid rgba(255,255,255,.35);color:rgba(255,255,255,.85);background:transparent;transition:all .15s}
+.ftab:hover{border-color:#fff;color:#fff}
+.ftab.active{background:#fff;color:var(--bd);border-color:#fff;font-weight:600}
+.scards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 20px 0}
+.sc{background:#fff;border-radius:12px;padding:14px 16px;border:1px solid var(--br);cursor:pointer}
+.sc:hover{border-color:var(--bm)}
+.sc-label{font-size:11px;color:var(--mu);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.sc-num{font-size:26px;font-weight:700}
+.n-gy{color:var(--gy)}.n-bl{color:var(--bd)}.n-am{color:var(--or)}.n-gn{color:var(--gn)}
+.below{display:flex;flex:1;overflow:hidden;margin-top:14px}
+.sidebar{width:310px;min-width:310px;background:#fff;border-right:1px solid var(--br);display:flex;flex-direction:column;height:calc(100vh - 54px - 40px - 110px)}
+.sidebar-top{padding:10px;border-bottom:1px solid var(--br);display:flex;gap:8px}
+.search-inp{flex:1;border:1px solid var(--br);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;color:var(--tx);background:var(--sf)}
+.search-inp:focus{border-color:var(--bm)}
+.btn-new{padding:8px 14px;background:var(--bd);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn-new:hover{background:var(--bm)}
+.tlist{flex:1;overflow-y:auto}
+.ti{padding:11px 13px;border-bottom:1px solid var(--br);cursor:pointer}
+.ti:hover{background:var(--sf)}
+.ti.sel{background:var(--bp);border-left:3px solid var(--bd)}
+.ti-title{font-size:13px;font-weight:600;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ti-meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.b-ip{background:var(--bp);color:var(--bd)}
+.b-oh{background:var(--ob);color:var(--or)}
+.b-ns{background:var(--gb2);color:var(--gy)}
+.b-done{background:var(--gb);color:var(--gn)}
+.b-can{background:var(--rb);color:var(--rd)}
+.b-hi{background:var(--rb);color:var(--rd)}
+.b-med{background:var(--ob);color:var(--or)}
+.b-lo{background:var(--bp);color:var(--bd)}
+.ti-asgn{font-size:11px;color:var(--mu)}
+.empty{padding:40px 20px;text-align:center;color:var(--mu);font-size:14px}
+.carea{flex:1;padding:0 18px 18px;display:flex;flex-direction:column;overflow-y:auto;height:calc(100vh - 54px - 40px - 110px)}
+.dpanel{background:#fff;border-radius:14px;border:1px solid var(--br);overflow:hidden;flex:1}
+.dheader{padding:14px 18px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center}
+.dtitle{font-size:15px;font-weight:600}
+.dactions{display:flex;gap:8px}
+.btn-edit{padding:7px 16px;background:var(--bd);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-edit:hover{background:var(--bm)}
+.btn-del{padding:7px 12px;background:#fff;color:var(--rd);border:1px solid var(--br);border-radius:8px;font-size:13px;cursor:pointer}
+.btn-del:hover{background:var(--rb)}
+.dgrid{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field.full{grid-column:span 2}
+.fl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.fv{font-size:13px;background:var(--sf);border-radius:8px;padding:8px 11px;min-height:34px;display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 18px 14px}
+.mc{background:var(--sf);border-radius:10px;padding:10px;text-align:center;border:1px solid var(--br)}
+.mc-l{font-size:10px;color:var(--mu);margin-bottom:3px}
+.mc-v{font-size:18px;font-weight:700;color:var(--bd)}
+.hs{margin:0 18px 16px;padding:12px;background:var(--bp);border-radius:10px;border:1px solid var(--bl)}
+.hl{font-size:12px;color:var(--bd);font-weight:600;margin-bottom:6px}
+.hta{width:100%;border:1px solid var(--bl);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--tx);background:#fff;resize:vertical;min-height:64px;font-family:inherit;outline:none}
+.hta:focus{border-color:var(--bm)}
+.btn-shc{margin-top:7px;padding:6px 16px;background:var(--bd);color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer}
+.nosel{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--mu);font-size:14px;text-align:center;padding:60px 20px}
+.nosel-icon{font-size:48px;margin-bottom:14px;opacity:.3}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:16px;width:640px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.mhdr{padding:18px 22px 14px;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
+.mtitle{font-size:16px;font-weight:600}
+.btn-cls{background:none;border:none;font-size:22px;cursor:pointer;color:var(--mu);line-height:1}
+.mbody{padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ff{display:flex;flex-direction:column;gap:4px}
+.ff.full{grid-column:span 2}
+.ff label{font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.4px}
+.ff input,.ff select,.ff textarea{border:1px solid var(--br);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--tx);outline:none;font-family:inherit;width:100%;background:#fff}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--bm)}
+.ff textarea{resize:vertical;min-height:72px}
+.mftr{padding:14px 22px;border-top:1px solid var(--br);display:flex;justify-content:flex-end;gap:10px;position:sticky;bottom:0;background:#fff}
+.btn-cancel{padding:8px 18px;background:#fff;color:var(--tx);border:1px solid var(--br);border-radius:8px;font-size:13px;cursor:pointer}
+.btn-sub{padding:8px 22px;background:var(--bd);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer}
+.btn-sub:hover{background:var(--bm)}
+.btn-sub:disabled{opacity:.6;cursor:not-allowed}
+#loadOv{display:none;position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px;font-size:14px;color:var(--mu)}
+#loadOv.show{display:flex}
+.spin{width:32px;height:32px;border:3px solid var(--bl);border-top-color:var(--bd);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;padding:11px 18px;border-radius:10px;font-size:13px;z-index:9999;display:none;color:#fff}
+.toast.success{background:var(--gn)}
+.toast.error{background:var(--rd)}
+.toast.info{background:var(--bd)}
+</style>
+</head>
+<body>
 
+<div id="loginScreen">
+  <div class="lcard">
+    <div class="licon">📋</div>
+    <h1>Task Manager</h1>
+    <p>ONE SW TEAM<br/>Sign in with your Microsoft account to manage and track your team's tasks.</p>
+    <button class="btn-ms" id="signInBtn" onclick="signIn()">Sign in with Microsoft</button>
+    <p class="note">You will be asked to approve access on first sign-in</p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <span class="topbar-title">📋 Task Manager — ONE SW TEAM</span>
+    <div class="topbar-right">
+      <span class="uinfo" id="uinfo"></span>
+      <button class="btn-so" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="fbar">
+    <button class="ftab active" onclick="setFilter('All',this)">All</button>
+    <button class="ftab" onclick="setFilter('Not Started',this)">Not Started</button>
+    <button class="ftab" onclick="setFilter('In Progress',this)">In Progress</button>
+    <button class="ftab" onclick="setFilter('On Hold',this)">On Hold</button>
+    <button class="ftab" onclick="setFilter('Completed',this)">Completed</button>
+    <button class="ftab" onclick="setFilter('Cancelled',this)">Cancelled</button>
+  </div>
+  <div class="scards">
+    <div class="sc"><div class="sc-label">Total Tasks</div><div class="sc-num n-gy" id="c-all">0</div></div>
+    <div class="sc"><div class="sc-label">In Progress</div><div class="sc-num n-bl" id="c-ip">0</div></div>
+    <div class="sc"><div class="sc-label">On Hold</div><div class="sc-num n-am" id="c-oh">0</div></div>
+    <div class="sc"><div class="sc-label">Completed</div><div class="sc-num n-gn" id="c-dn">0</div></div>
+  </div>
+  <div class="below">
+    <div class="sidebar">
+      <div class="sidebar-top">
+        <input class="search-inp" id="srch" placeholder="Search tasks..." oninput="renderList()"/>
+        <button class="btn-new" onclick="openModal()">+ New</button>
+      </div>
+      <div class="tlist" id="tlist"></div>
+    </div>
+    <div class="carea" id="carea">
+      <div class="nosel"><div class="nosel-icon">📄</div>Select a task to view details</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-ov" id="modal">
+  <div class="modal">
+    <div class="mhdr">
+      <span class="mtitle" id="mtitle">New Task</span>
+      <button class="btn-cls" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="mbody">
+      <div class="ff full"><label>Task Title *</label><input id="f-title" placeholder="Enter task title"/></div>
+      <div class="ff"><label>Job Type</label>
+        <select id="f-jt"><option value="">Select...</option><option>Development</option><option>Bug Fix</option><option>Testing</option><option>Support</option><option>Feature Update</option><option>Meeting</option><option>Other</option></select>
+      </div>
+      <div class="ff"><label>Priority</label>
+        <select id="f-pr"><option value="">Select...</option><option>High</option><option>Medium</option><option>Low</option></select>
+      </div>
+      <div class="ff"><label>Status</label>
+        <select id="f-st"><option>Not Started</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select>
+      </div>
+      <div class="ff"><label>Assigned To</label><input id="f-as" placeholder="Team member name"/></div>
+      <div class="ff"><label>Planned Start Date</label><input type="date" id="f-sd"/></div>
+      <div class="ff"><label>Planned End Date</label><input type="date" id="f-ed"/></div>
+      <div class="ff"><label>Planned Days</label><input type="number" id="f-pd" min="0" placeholder="0"/></div>
+      <div class="ff"><label>Days Spent</label><input type="number" id="f-ds" min="0" placeholder="0"/></div>
+      <div class="ff"><label>Planned Hrs</label><input type="number" id="f-ph" min="0" placeholder="0"/></div>
+      <div class="ff"><label>Actual Hrs</label><input type="number" id="f-ah" min="0" placeholder="0"/></div>
+      <div class="ff"><label>Feature Updates Days</label><input type="number" id="f-fud" min="0" placeholder="0"/></div>
+      <div class="ff"><label>Feature Updates Hrs</label><input type="number" id="f-fuh" min="0" placeholder="0"/></div>
+      <div class="ff full"><label>Description</label><textarea id="f-desc" placeholder="Describe the task..."></textarea></div>
+      <div class="ff full"><label>Comments / Notes</label><textarea id="f-notes" placeholder="Add any notes..."></textarea></div>
+    </div>
+    <div class="mftr">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-sub" id="bsub" onclick="submitTask()">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<div id="loadOv"><div class="spin"></div><span id="loadMsg">Loading...</span></div>
+<div class="toast" id="toast"></div>
+
+<script>
+function loadMSAL(cb) {
+  const urls = [
+    'https://cdnjs.cloudflare.com/ajax/libs/microsoft-authentication-library/2.38.0/msal-browser.min.js',
+    'https://unpkg.com/@azure/msal-browser@2.38.0/dist/msal-browser.min.js'
+  ];
+  let i = 0;
+  function tryNext() {
+    if (i >= urls.length) { alert('Failed to load auth library. Please refresh.'); return; }
+    const s = document.createElement('script');
+    s.src = urls[i++];
+    s.onload = cb;
+    s.onerror = tryNext;
+    document.head.appendChild(s);
+  }
+  tryNext();
+}
+document.addEventListener('DOMContentLoaded', () => loadMSAL(initMsal));
+</script>
+<script>
+const CLIENT_ID = '986b7936-6193-4547-8061-4dc0d7dfa048';
+const REDIRECT_URI = 'https://saranya-esol.github.io/task-manager/';
+const SITE_HOST = 'ariesmar.sharepoint.com';
+const SITE_PATH = '/sites/ONESWTEAM';
+const LIST_NAME = 'Task Manager';
+const HEAD_EMAILS = [];
+
+let msalInstance, tasks=[], filter='All', selId=null, editId=null, isHead=false, siteId='', listId='';
+
+async function initMsal() {
+  msalInstance = new msal.PublicClientApplication({
+    auth: { clientId: CLIENT_ID, authority: 'https://login.microsoftonline.com/common', redirectUri: REDIRECT_URI },
+    cache: { cacheLocation: 'localStorage' }
+  });
+  await msalInstance.initialize();
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length) { msalInstance.setActiveAccount(accounts[0]); await boot(accounts[0]); }
+}
+
+const SCOPES = ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/User.Read'];
+
+async function signIn() {
+  const btn = document.getElementById('signInBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    const res = await msalInstance.loginPopup({ scopes: SCOPES });
+    msalInstance.setActiveAccount(res.account);
+    await boot(res.account);
+  } catch(e) {
+    toast('Sign in failed: ' + e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Sign in with Microsoft';
+  }
+}
+
+function signOut() {
+  msalInstance.logoutPopup();
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+async function getToken() {
+  const acct = msalInstance.getActiveAccount();
+  const res = await msalInstance.acquireTokenSilent({ scopes: SCOPES, account: acct });
+  return res.accessToken;
+}
+
+async function api(url, method='GET', body=null) {
+  const token = await getToken();
+  const opts = { method, headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('https://graph.microsoft.com/v1.0' + url, opts);
+  if (r.status === 204) return null;
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error?.message || r.statusText);
+  return data;
+}
+
+async function boot(account) {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  document.getElementById('uinfo').textContent = account.name || account.username;
+  isHead = HEAD_EMAILS.map(e=>e.toLowerCase()).includes((account.username||'').toLowerCase());
+  showLoad('Connecting to SharePoint...');
+  try {
+    const site = await api(`/sites/${SITE_HOST}:${SITE_PATH}`);
+    siteId = site.id;
+    const lists = await api(`/sites/${siteId}/lists?$filter=displayName eq '${LIST_NAME}'`);
+    if (!lists.value.length) throw new Error(`List "${LIST_NAME}" not found`);
+    listId = lists.value[0].id;
+    await loadTasks();
+  } catch(e) { hideLoad(); toast('Connection error: ' + e.message, 'error'); }
+}
+
+async function loadTasks() {
+  showLoad('Loading tasks...');
+  try {
+    const sel = 'Title,Job_x0020_Type,Description,Comments_x0020_Notes,Priority,Status,Assigned_x0020_To,Planned_x0020_Start_x0020_Date,Planned_x0020_End_x0020_Date,Planned_x0020_Days,Days_x0020_Spent,Planned_x0020_Hrs,Actual_x0020_Hrs,Feature_x0020_Updates_x0020_Days,Feature_x0020_Updates_x0020_Hrs,Head_x0020_Comments';
+    const data = await api(`/sites/${siteId}/lists/${listId}/items?expand=fields(select=${sel})&$top=999&$orderby=fields/Created desc`);
+    tasks = data.value.map(i => ({id: i.id, ...i.fields}));
+    updCards(); renderList();
+  } catch(e) { toast('Error: ' + e.message, 'error'); }
+  hideLoad();
+}
+
+function updCards() {
+  document.getElementById('c-all').textContent = tasks.length;
+  document.getElementById('c-ip').textContent = tasks.filter(t=>t.Status==='In Progress').length;
+  document.getElementById('c-oh').textContent = tasks.filter(t=>t.Status==='On Hold').length;
+  document.getElementById('c-dn').textContent = tasks.filter(t=>t.Status==='Completed').length;
+}
+
+function setFilter(f, el) {
+  filter = f;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  selId = null;
+  document.getElementById('carea').innerHTML = nosel();
+  renderList();
+}
+
+function getFiltered() {
+  const q = (document.getElementById('srch').value||'').toLowerCase();
+  return tasks.filter(t => {
+    const okF = filter==='All' || t.Status===filter;
+    const okS = !q || (t.Title||'').toLowerCase().includes(q) || (t.Description||'').toLowerCase().includes(q) || (t['Assigned_x0020_To']||'').toLowerCase().includes(q);
+    return okF && okS;
+  });
+}
+
+function sc(s) { const m={'In Progress':'ip','On Hold':'oh','Not Started':'ns','Completed':'done','Cancelled':'can'}; return 'b-'+(m[s]||'ns'); }
+function pc(p) { const m={'High':'hi','Medium':'med','Low':'lo'}; return 'b-'+(m[p]||'ns'); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtD(d) { if(!d) return '—'; try{return new Date(d).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d;} }
+
+function renderList() {
+  const list = getFiltered();
+  const el = document.getElementById('tlist');
+  if (!list.length) { el.innerHTML='<div class="empty">No tasks found</div>'; return; }
+  el.innerHTML = list.map(t=>`
+    <div class="ti ${t.id===selId?'sel':''}" onclick="selectTask('${t.id}')">
+      <div class="ti-title">${esc(t.Title||'Untitled')}</div>
+      <div class="ti-meta">
+        <span class="badge ${sc(t.Status)}">${esc(t.Status||'Not Started')}</span>
+        ${t.Priority?`<span class="badge ${pc(t.Priority)}">${esc(t.Priority)}</span>`:''}
+        ${t['Assigned_x0020_To']?`<span class="ti-asgn">${esc(t['Assigned_x0020_To'])}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function selectTask(id) {
+  selId = id; renderList();
+  const t = tasks.find(x=>x.id===id); if(!t) return;
+  const fv = v=>`<div class="fv">${esc(v||'—')}</div>`;
+  const fb = (v,c)=>v?`<div class="fv"><span class="badge ${c}">${esc(v)}</span></div>`:`<div class="fv">—</div>`;
+  document.getElementById('carea').innerHTML = `
+  <div class="dpanel">
+    <div class="dheader">
+      <div class="dtitle">${esc(t.Title||'Untitled')}</div>
+      <div class="dactions">
+        <button class="btn-del" onclick="deleteTask('${t.id}')">🗑 Delete</button>
+        <button class="btn-edit" onclick="openModal('${t.id}')">✏️ Edit</button>
+      </div>
+    </div>
+    <div class="dgrid">
+      <div class="field"><div class="fl">Job Type</div>${fv(t['Job_x0020_Type'])}</div>
+      <div class="field"><div class="fl">Status</div>${fb(t.Status,sc(t.Status))}</div>
+      <div class="field"><div class="fl">Priority</div>${fb(t.Priority,pc(t.Priority))}</div>
+      <div class="field"><div class="fl">Assigned To</div>${fv(t['Assigned_x0020_To'])}</div>
+      <div class="field"><div class="fl">Planned Start</div>${fv(fmtD(t['Planned_x0020_Start_x0020_Date']))}</div>
+      <div class="field"><div class="fl">Planned End</div>${fv(fmtD(t['Planned_x0020_End_x0020_Date']))}</div>
+      <div class="field full"><div class="fl">Description</div>${fv(t.Description)}</div>
+      <div class="field full"><div class="fl">Comments / Notes</div>${fv(t['Comments_x0020_Notes'])}</div>
+    </div>
+    <div class="metrics">
+      <div class="mc"><div class="mc-l">Planned Days</div><div class="mc-v">${t['Planned_x0020_Days']||0}</div></div>
+      <div class="mc"><div class="mc-l">Days Spent</div><div class="mc-v">${t['Days_x0020_Spent']||0}</div></div>
+      <div class="mc"><div class="mc-l">Planned Hrs</div><div class="mc-v">${t['Planned_x0020_Hrs']||0}</div></div>
+      <div class="mc"><div class="mc-l">Actual Hrs</div><div class="mc-v">${t['Actual_x0020_Hrs']||0}</div></div>
+      <div class="mc"><div class="mc-l">FU Days/Hrs</div><div class="mc-v">${t['Feature_x0020_Updates_x0020_Days']||0}/${t['Feature_x0020_Updates_x0020_Hrs']||0}</div></div>
+    </div>
+    ${isHead?`<div class="hs"><div class="hl">🔒 Head Comments (Manager only)</div><textarea class="hta" id="hci">${esc(t['Head_x0020_Comments']||'')}</textarea><button class="btn-shc" onclick="saveHC('${t.id}')">Save Comment</button></div>`:''}
+  </div>`;
+}
+
+function nosel() { return '<div class="nosel"><div class="nosel-icon">📄</div>Select a task to view details</div>'; }
+
+function openModal(id=null) {
+  editId=id;
+  document.getElementById('mtitle').textContent = id?'Edit Task':'New Task';
+  ['title','jt','pr','st','as','sd','ed','pd','ds','ph','ah','fud','fuh','desc','notes'].forEach(i=>{const el=document.getElementById('f-'+i);if(el)el.value='';});
+  document.getElementById('f-st').value='Not Started';
+  if(id) {
+    const t=tasks.find(x=>x.id===id); if(!t) return;
+    document.getElementById('f-title').value=t.Title||'';
+    document.getElementById('f-jt').value=t['Job_x0020_Type']||'';
+    document.getElementById('f-pr').value=t.Priority||'';
+    document.getElementById('f-st').value=t.Status||'Not Started';
+    document.getElementById('f-as').value=t['Assigned_x0020_To']||'';
+    document.getElementById('f-sd').value=(t['Planned_x0020_Start_x0020_Date']||'').split('T')[0];
+    document.getElementById('f-ed').value=(t['Planned_x0020_End_x0020_Date']||'').split('T')[0];
+    document.getElementById('f-pd').value=t['Planned_x0020_Days']||'';
+    document.getElementById('f-ds').value=t['Days_x0020_Spent']||'';
+    document.getElementById('f-ph').value=t['Planned_x0020_Hrs']||'';
+    document.getElementById('f-ah').value=t['Actual_x0020_Hrs']||'';
+    document.getElementById('f-fud').value=t['Feature_x0020_Updates_x0020_Days']||'';
+    document.getElementById('f-fuh').value=t['Feature_x0020_Updates_x0020_Hrs']||'';
+    document.getElementById('f-desc').value=t.Description||'';
+    document.getElementById('f-notes').value=t['Comments_x0020_Notes']||'';
+  }
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); editId=null; }
+
+async function submitTask() {
+  const title=(document.getElementById('f-title').value||'').trim();
+  if(!title){toast('Task title is required','error');return;}
+  const btn=document.getElementById('bsub');
+  btn.disabled=true; btn.textContent='Saving...';
+  const fields={
+    Title:title,
+    Job_x0020_Type:document.getElementById('f-jt').value||null,
+    Priority:document.getElementById('f-pr').value||null,
+    Status:document.getElementById('f-st').value,
+    Assigned_x0020_To:document.getElementById('f-as').value||null,
+    Planned_x0020_Start_x0020_Date:document.getElementById('f-sd').value||null,
+    Planned_x0020_End_x0020_Date:document.getElementById('f-ed').value||null,
+    Planned_x0020_Days:Number(document.getElementById('f-pd').value)||null,
+    Days_x0020_Spent:Number(document.getElementById('f-ds').value)||null,
+    Planned_x0020_Hrs:Number(document.getElementById('f-ph').value)||null,
+    Actual_x0020_Hrs:Number(document.getElementById('f-ah').value)||null,
+    Feature_x0020_Updates_x0020_Days:Number(document.getElementById('f-fud').value)||null,
+    Feature_x0020_Updates_x0020_Hrs:Number(document.getElementById('f-fuh').value)||null,
+    Description:document.getElementById('f-desc').value||null,
+    Comments_x0020_Notes:document.getElementById('f-notes').value||null,
+  };
+  try {
+    if(editId){
+      await api(`/sites/${siteId}/lists/${listId}/items/${editId}`,'PATCH',{fields});
+      toast('Task updated!','success');
+    } else {
+      await api(`/sites/${siteId}/lists/${listId}/items`,'POST',{fields});
+      toast('Task created!','success');
+    }
+    const prev=editId; closeModal(); await loadTasks();
+    if(prev) selectTask(prev);
+  } catch(e){toast('Error: '+e.message,'error');}
+  btn.disabled=false; btn.textContent='Save Task';
+}
+
+async function saveHC(id) {
+  try {
+    const val=document.getElementById('hci').value;
+    await api(`/sites/${siteId}/lists/${listId}/items/${id}`,'PATCH',{fields:{Head_x0020_Comments:val}});
+    toast('Comment saved!','success'); await loadTasks(); selectTask(id);
+  } catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function deleteTask(id) {
+  if(!confirm('Delete this task? This cannot be undone.')) return;
+  try {
+    await api(`/sites/${siteId}/lists/${listId}/items/${id}`,'DELETE');
+    toast('Task deleted','success'); selId=null;
+    document.getElementById('carea').innerHTML=nosel();
+    await loadTasks();
+  } catch(e){toast('Error: '+e.message,'error');}
+}
+
+function showLoad(m='Loading...'){document.getElementById('loadMsg').textContent=m;document.getElementById('loadOv').classList.add('show');}
+function hideLoad(){document.getElementById('loadOv').classList.remove('show');}
+function toast(msg,type='info'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type;el.style.display='block';setTimeout(()=>el.style.display='none',3500);}
+
+
+</script>
+</body>
+</html>
