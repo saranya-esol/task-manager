@@ -240,33 +240,33 @@ const msalCfg = {
   auth: {
     clientId: CLIENT_ID,
     authority: 'https://login.microsoftonline.com/common',
-    redirectUri: window.location.href.split('?')[0].split('#')[0]
+    redirectUri: "https://saranya-esol.github.io/task-manager"
   },
   cache: { cacheLocation: 'localStorage' }
 };
 
-const msal = new msal.PublicClientApplication(msalCfg);
+const msalApp = new msal.PublicClientApplication(msalCfg);
 const SCOPES = ['https://graph.microsoft.com/Sites.ReadWrite.All','https://graph.microsoft.com/User.Read'];
 
 let tasks=[], currentFilter='All', selectedId=null, editingId=null, isHead=false, siteId='', listId='';
 
 async function signIn() {
   try {
-    const res = await msal.loginPopup({ scopes: SCOPES });
-    msal.setActiveAccount(res.account);
+    const res = await msalApp.loginPopup({ scopes: SCOPES });
+    msalApp.setActiveAccount(res.account);
     await boot(res.account);
   } catch(e) { toast('Sign in failed: ' + e.message, 'error'); }
 }
 
 function signOut() {
-  msal.logoutPopup();
+  msalApp.logoutPopup();
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('app').style.display='none';
 }
 
 async function getToken() {
-  const acct = msal.getActiveAccount();
-  const res = await msal.acquireTokenSilent({ scopes: SCOPES, account: acct });
+  const acct = msalApp.getActiveAccount();
+  const res = await msalApp.acquireTokenSilent({ scopes: SCOPES, account: acct });
   return res.accessToken;
 }
 
@@ -498,9 +498,9 @@ function toast(msg,type='info') {
 }
 
 (async()=>{
-  await msal.initialize();
-  const accounts=msal.getAllAccounts();
-  if(accounts.length){ msal.setActiveAccount(accounts[0]); await boot(accounts[0]); }
+  await msalApp.initialize();
+  const accounts=msalApp.getAllAccounts();
+  if(accounts.length){ msalApp.setActiveAccount(accounts[0]); await boot(accounts[0]); }
 })();
 </script>
 </body>
